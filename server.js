@@ -13,8 +13,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // PayPal credentials
-const PAYPAL_CLIENT_ID = "ASWQaJ2hXRYy_Fw5ZeEk4b_P-F81nLtgBDv_slxexRtmfMd7ercLpMrjp2uRLcijW0g_gsgLH6mPi4B2";
-const PAYPAL_SECRET = "EIZdg_DmKNBRE_Cx0UOm9LssEGuWYS8Xg_PqLuLrnvgg2I2WJ44pBN6nd1Lp5WNMYw_zbfLvWhaVoAVG";
+const PAYPAL_CLIENT_ID = "";
+const PAYPAL_SECRET = "";
 const PAYPAL_API = "https://api-m.sandbox.paypal.com";
 
 mongoose.connect("mongodb://127.0.0.1:27017/zaystore")
