@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -14,9 +15,15 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // PayPal credentials
-const PAYPAL_CLIENT_ID = "";
-const PAYPAL_SECRET = "";
-const PAYPAL_API = "https://api-m.sandbox.paypal.com";
+const PAYPAL_CLIENT_ID =
+process.env.PAYPAL_CLIENT_ID;
+const PAYPAL_SECRET =
+process.env.PAYPAL_SECRET;
+const PAYPAL_API = 
+"https://api-m.sandbox.paypal.com";
+
+console.log("CLIENT:",process.env.PAYPAL_CLIENT_ID);
+console.log("SECRET:",process.env.PAYPAL_SECRET);
 
 mongoose.connect("mongodb://127.0.0.1:27017/zaystore")
   .then(() => console.log("MongoDB connected"))
