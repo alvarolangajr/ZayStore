@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Product Details</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <h1>ZayStore</h1>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="add-product.html">Add Product</a>
+      <a href="orders.html">Orders</a>
+    </div>
+  </nav>
+
+  <section class="section">
+    <div id="productDetails"></div>
+  </section>
+
+  <script src="https://www.paypal.com/sdk/js?client-id=ASWQaJ2hXRYy_Fw5ZeEk4b_P-F81nLtgBDv_slxexRtmfMd7ercLpMrjp2uRLcijW0g_gsgLH6mPi4B2&currency=EUR"></script>
+
+  <script>
+    let currentProduct = null;
+
+    async function loadProduct() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      const container = document.getElementById("productDetails");
+
+      if (!id) {
+        container.innerHTML = "<p>No product ID found.</p>";
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/products/${id}`);
+
+        if (!res.ok) {
+          container.innerHTML = "<p>Failed to load product.</p>";
+          return;
+        }
+
+        const product = await res.json();
+        currentProduct = product;
+
+        if (!product || !product.name) {
+          container.innerHTML = "<p>Product not found.</p>";
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="product-detail-card">
+            <div class="product-detail-image">
+              <img src="${product.image}" alt="${product.name}" onerror="this.src='images/Mercurial.avif'">
+            </div>
+
+            <div class="product-detail-info">
+              <p class="product-category">${product.category || "Football Boots"}</p>
+              <h2>${product.name}</h2>
+              <p class="product-description">${product.description}</p>
+              <p class="price">€${product.price}</p>
+
+              <div id="paypal-message" style="margin-bottom: 12px;"></div>
+              <div id="paypal-button-container" style="margin-bottom: 12px;"></div>
+
+              <div class="button-group">
+                <a class="btn" href="products.html">Back to Products</a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        renderPayPalButtons();
+      } catch (error) {
+        console.error("Product page error:", error);
+        container.innerHTML = "<p>Error loading product details.</p>";
+      }
+    }
+
+    function renderPayPalButtons() {
+      const paypalContainer = document.getElementById("paypal-button-container");
+      const paypalMessage = document.getElementById("paypal-message");
+
+      if (!paypalContainer) return;
+
+      if (typeof paypal === "undefined") {
+        if (paypalMessage) {
+          paypalMessage.innerHTML = "<p>PayPal could not load. Disable Brave shields/ad blocker and refresh.</p>";
+        }
+        return;
+      }
+
+      paypal.Buttons({
+        style: {
+          color: "blue",
+          shape: "rect",
+          label: "pay",
+          height: 45
+        },
+
+        createOrder: async () => {
+          try {
+            const res = await fetch("/api/paypal/create-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                productName: currentProduct.name,
+                price: Number(currentProduct.price)
+              })
+            });
+
+            const order = await res.json();
+
+           if (!order.id) {
+            console.error("PayPal create order failed:", order);
+            alert("Create order failed: " + JSON.stringify(order));
+            throw new Error("Failed to create PayPal order");
+          }
+
+            return order.id;
+          } catch (error) {
+            console.error("Create order error:", error);
+            alert("Could not start PayPal checkout.");
+            throw error;
+          }
+        },
+
+        onApprove: async (data) => {
+          try {
+            const res = await fetch("/api/paypal/capture-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderID: data.orderID,
+                productName: currentProduct.name,
+                price: Number(currentProduct.price)
+              })
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+              alert("Payment Successful! Thank you for your purchase.");
+              window.location.href = "orders.html";
+            } else {
+              console.error("Capture failed:", result);
+              alert("Payment Failed. Please try again.");
+            }
+          } catch (error) {
+            console.error("Capture error:", error);
+            alert("Payment error. Please try again.");
+          }
+        },
+
+        onError: (err) => {
+          console.error("PayPal SDK error:", err);
+          alert("PayPal error. Please try again.");
+        },
+
+        onCancel: () => {
+          alert("Payment cancelled.");
+        }
+      }).render("#paypal-button-container");
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>

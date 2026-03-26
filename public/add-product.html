@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Add Product</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <h1>ZayStore</h1>
+    <div class="links">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="add-product.html">Add Product</a>
+      <a href="orders.html">Orders</a>
+    </div>
+  </nav>
+
+  <section class="section">
+    <h2>Add New Product</h2>
+
+    <form id="productForm">
+      <input type="text" id="name" placeholder="Product name" required>
+      <input type="number" id="price" placeholder="Price" required>
+      <input type="text" id="image" placeholder="Image URL" required>
+      <textarea id="description" placeholder="Description" required></textarea>
+      <button class="btn" type="submit">Add Product</button>
+    </form>
+  </section>
+
+  <script>
+    document.getElementById("productForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const product = {
+        name: document.getElementById("name").value,
+        price: Number(document.getElementById("price").value),
+        image: document.getElementById("image").value,
+        description: document.getElementById("description").value
+      };
+
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(product)
+      });
+
+      if (res.ok) {
+        alert("Product added successfully");
+        document.getElementById("productForm").reset();
+      } else {
+        alert("Failed to add product");
+      }
+    });
+  </script>
+</body>
+</html>
