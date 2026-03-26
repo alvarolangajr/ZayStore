@@ -22,9 +22,6 @@ process.env.PAYPAL_SECRET;
 const PAYPAL_API = 
 "https://api-m.sandbox.paypal.com";
 
-console.log("CLIENT:",process.env.PAYPAL_CLIENT_ID);
-console.log("SECRET:",process.env.PAYPAL_SECRET);
-
 mongoose.connect("mongodb://127.0.0.1:27017/zaystore")
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
